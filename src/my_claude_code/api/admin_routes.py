@@ -87,16 +87,16 @@ from my_claude_code.config.websearch_catalog import (
     WEBSEARCH_CATALOG,
     WebSearchDescriptor,
 )
+from my_claude_code.core.messaging_auth import (
+    discord_auth_open,
+    telegram_auth_open,
+)
 from my_claude_code.core.optimization_discovery import (
     DEFAULT_SCAN_ROW_LIMIT,
     MAX_SCAN_ROW_LIMIT,
     discover_families,
 )
 from my_claude_code.core.request_log import RequestLogStore, store_from_settings
-from my_claude_code.messaging.platforms.factory import (
-    discord_auth_open,
-    telegram_auth_open,
-)
 from my_claude_code.providers.anthropic_oauth.credentials import (
     OAuthTokens,
     claude_credentials_path,
