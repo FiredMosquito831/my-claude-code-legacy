@@ -4,9 +4,13 @@ from dataclasses import dataclass
 
 from loguru import logger
 
+from my_claude_code.core.messaging_auth import (
+    discord_auth_open,
+    telegram_auth_open,
+)
+
 from ..limiter import MessagingRateLimiter
 from ..voice import Transcriber
-from .discord_inbound import parse_allowed_channels
 from .ports import MessagingPlatformComponents, MessagingStartupNotice
 
 
@@ -25,25 +29,6 @@ class MessagingPlatformOptions:
     log_raw_messaging_content: bool = False
     log_messaging_error_details: bool = False
     log_api_error_tracebacks: bool = False
-
-
-def telegram_auth_open(allowed_user_id: str | None) -> bool:
-    """True when Telegram runs without an operator allowlist.
-
-    Blank-after-strip counts as unconfigured so the log warning, the admin
-    ``messaging_auth_open`` payload, and the dashboard's own ``configured``
-    flag agree on the same notion of "no allowlist".
-    """
-    return not str(allowed_user_id or "").strip()
-
-
-def discord_auth_open(allowed_channel_ids: str | None) -> bool:
-    """True when Discord runs without a channel allowlist.
-
-    Uses the inbound parser so degenerate lists ("", " ", " ,") that accept
-    every channel are reported as open, matching runtime behavior.
-    """
-    return not parse_allowed_channels(allowed_channel_ids)
 
 
 def create_messaging_components(
