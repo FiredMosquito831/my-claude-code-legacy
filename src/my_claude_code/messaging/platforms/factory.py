@@ -6,6 +6,7 @@ from loguru import logger
 
 from ..limiter import MessagingRateLimiter
 from ..voice import Transcriber
+from .discord_inbound import parse_allowed_channels
 from .ports import MessagingPlatformComponents, MessagingStartupNotice
 
 
@@ -26,6 +27,25 @@ class MessagingPlatformOptions:
     log_api_error_tracebacks: bool = False
 
 
+def telegram_auth_open(allowed_user_id: str | None) -> bool:
+    """True when Telegram runs without an operator allowlist.
+
+    Blank-after-strip counts as unconfigured so the log warning, the admin
+    ``messaging_auth_open`` payload, and the dashboard's own ``configured``
+    flag agree on the same notion of "no allowlist".
+    """
+    return not str(allowed_user_id or "").strip()
+
+
+def discord_auth_open(allowed_channel_ids: str | None) -> bool:
+    """True when Discord runs without a channel allowlist.
+
+    Uses the inbound parser so degenerate lists ("", " ", " ,") that accept
+    every channel are reported as open, matching runtime behavior.
+    """
+    return not parse_allowed_channels(allowed_channel_ids)
+
+
 def create_messaging_components(
     platform_type: str,
     options: MessagingPlatformOptions | None = None,
@@ -41,6 +61,13 @@ def create_messaging_components(
         if not bot_token:
             logger.info("No Telegram bot token configured, skipping platform setup")
             return None
+
+        if telegram_auth_open(opts.allowed_telegram_user_id):
+            logger.warning(
+                "SECURITY: Telegram operator allowlist is disabled - any Telegram "
+                "user who finds this bot can message it and act as the operator. "
+                "Lock it to your account by setting ALLOWED_TELEGRAM_USER_ID."
+            )
 
         from .telegram import TelegramRuntime
 
@@ -79,6 +106,13 @@ def create_messaging_components(
         if not bot_token:
             logger.info("No Discord bot token configured, skipping platform setup")
             return None
+
+        if discord_auth_open(opts.allowed_discord_channels):
+            logger.warning(
+                "SECURITY: Discord channel allowlist is disabled - any channel "
+                "that can see this bot can message it and act as the operator. "
+                "Lock it to your channels by setting ALLOWED_DISCORD_CHANNELS."
+            )
 
         from .discord import DiscordRuntime
 
