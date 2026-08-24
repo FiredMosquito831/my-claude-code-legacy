@@ -1279,11 +1279,7 @@ wheels = [
 
 [[package]]
 name = "my-claude-code"
-<<<<<<< HEAD
-version = "5.55.0"
-=======
-version = "5.54.0"
->>>>>>> 91e5964 (chore: slot 5.54.0 (MINOR: desktop lifecycle wiring))
+version = "5.56.0"
 source = { editable = "." }
 dependencies = [
     { name = "aiohttp" },
