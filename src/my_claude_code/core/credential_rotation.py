@@ -201,7 +201,10 @@ class RotationEngine:
             else PoolHealthState.HEALTHY
         )
         for slot in self._slots:
-            if slot.state is PoolHealthState.HEALTHY:
+            # Slots already in the wake state are left exactly as they are:
+            # re-waking a HALF_OPEN slot would clear an outstanding probe
+            # reservation and let a second request through mid-probe.
+            if slot.state is PoolHealthState.HEALTHY or slot.state is wake_state:
                 continue
             deadline = (
                 slot.lockout_until
@@ -431,6 +434,10 @@ class RotationEngine:
         slot.state = PoolHealthState.HEALTHY
         slot.consecutive_failures = 0
         slot.auth_failures = 0
+        # The counter doubles as the live escalation index in both historical
+        # engines (backoff keyed off it, zeroed on success), so a recovery
+        # resets it rather than preserving a lifetime total.
+        slot.lockouts = 0
         slot.tier = 0
         slot.cooldown_until = 0.0
         slot.lockout_until = 0.0

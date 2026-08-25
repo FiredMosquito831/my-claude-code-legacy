@@ -22,7 +22,6 @@ Expired states lazily return to ``HEALTHY`` on the next acquire.
 
 import time
 from collections.abc import Callable
-from dataclasses import dataclass
 from typing import Any
 
 from my_claude_code.config.credentials import mask_key_label
@@ -65,21 +64,82 @@ def default_rotation_policy(key_count: int) -> str:
 KeyHealthState = PoolHealthState
 
 
-@dataclass(slots=True)
 class KeyHealth:
-    """Read-only view over one pooled key's runtime health."""
+    """Live read-only view over one pooled key's runtime health.
 
-    key: str
-    requests: int = 0
-    successes: int = 0
-    failures: int = 0
-    consecutive_failures: int = 0
-    rate_limits: int = 0
-    lockouts: int = 0
-    state: KeyHealthState = KeyHealthState.HEALTHY
-    state_until: float = 0.0  # monotonic deadline; 0 when healthy
-    last_error: str | None = None
-    last_used_at: float | None = None
+    The historical pool handed out its own mutable record from
+    ``health_at``, so a reference held across further transitions keeps
+    reading current values rather than a point-in-time copy; this facade
+    preserves that contract over the shared engine's slot.
+    """
+
+    def __init__(self, *, key: str, slot: PoolSlot) -> None:
+        self._key = key
+        self._slot = slot
+
+    @property
+    def key(self) -> str:
+        return self._key
+
+    @property
+    def requests(self) -> int:
+        return self._slot.requests
+
+    @property
+    def successes(self) -> int:
+        return self._slot.successes
+
+    @property
+    def failures(self) -> int:
+        return self._slot.failures
+
+    @property
+    def consecutive_failures(self) -> int:
+        return self._slot.consecutive_failures
+
+    @property
+    def rate_limits(self) -> int:
+        return self._slot.rate_limits
+
+    @property
+    def lockouts(self) -> int:
+        return self._slot.lockouts
+
+    @property
+    def state(self) -> KeyHealthState:
+        return self._slot.state
+
+    @property
+    def state_until(self) -> float:
+        # Monotonic deadline; 0 while healthy.
+        if self._slot.state is KeyHealthState.HEALTHY:
+            return 0.0
+        return self._slot.deadline
+
+    @property
+    def last_error(self) -> str | None:
+        return self._slot.last_error
+
+    @property
+    def last_used_at(self) -> float | None:
+        return self._slot.last_used_at
+
+    def __repr__(self) -> str:
+        names = (
+            "key",
+            "requests",
+            "successes",
+            "failures",
+            "consecutive_failures",
+            "rate_limits",
+            "lockouts",
+            "state",
+            "state_until",
+            "last_error",
+            "last_used_at",
+        )
+        fields = ", ".join(f"{name}={getattr(self, name)!r}" for name in names)
+        return f"KeyHealth({fields})"
 
 
 class KeyPool:
@@ -119,20 +179,7 @@ class KeyPool:
         return self._view(index, self._engine.slot(index))
 
     def _view(self, index: int, slot: PoolSlot) -> KeyHealth:
-        healthy = slot.state is KeyHealthState.HEALTHY
-        return KeyHealth(
-            key=self._keys[index],
-            requests=slot.requests,
-            successes=slot.successes,
-            failures=slot.failures,
-            consecutive_failures=slot.consecutive_failures,
-            rate_limits=slot.rate_limits,
-            lockouts=slot.lockouts,
-            state=slot.state,
-            state_until=0.0 if healthy else slot.deadline,
-            last_error=slot.last_error,
-            last_used_at=slot.last_used_at,
-        )
+        return KeyHealth(key=self._keys[index], slot=slot)
 
     def acquire(
         self, *, exclude: frozenset[int] = frozenset()
