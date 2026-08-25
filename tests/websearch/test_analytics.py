@@ -8,6 +8,7 @@ import pytest
 
 from my_claude_code.websearch.analytics import (
     WebSearchLogStore,
+    _ensure_auto_vacuum,
     default_websearch_db_path,
     get_shared_store,
     record_search,
@@ -1187,6 +1188,47 @@ class TestStorageReclamation:
         # toward the steady-state footprint instead of pinning the bulk-phase
         # high-water mark (undrained, it stays ~6x the 5-row baseline).
         assert self._page_count(db_path) <= baseline_pages * 3
+
+
+class TestEnsureAutoVacuum:
+    """Pin ``_ensure_auto_vacuum``'s statement contract on a real connection."""
+
+    def test_already_incremental_skips_the_rebuild(self) -> None:
+        connection = sqlite3.connect(":memory:")
+        try:
+            connection.execute("PRAGMA auto_vacuum=INCREMENTAL")
+            statements: list[str] = []
+            connection.set_trace_callback(statements.append)
+
+            _ensure_auto_vacuum(connection)
+
+            assert statements == ["PRAGMA auto_vacuum"]
+        finally:
+            connection.close()
+
+    def test_legacy_database_converts_and_restores_isolation(self) -> None:
+        connection = sqlite3.connect(":memory:")
+        try:
+            assert int(connection.execute("PRAGMA auto_vacuum").fetchone()[0]) == 0
+            previous_isolation = connection.isolation_level
+            traced: list[str] = []
+            connection.set_trace_callback(traced.append)
+
+            _ensure_auto_vacuum(connection)
+
+            # ``--``-prefixed entries are engine-internal statements (SQLite
+            # reads back sqlite_stat1 while implementing ANALYZE), not
+            # statements issued by the helper.
+            statements = [sql for sql in traced if not sql.startswith("--")]
+            assert statements == [
+                "PRAGMA auto_vacuum",
+                "PRAGMA auto_vacuum=INCREMENTAL",
+                "VACUUM",
+                "ANALYZE",
+            ]
+            assert connection.isolation_level == previous_isolation
+        finally:
+            connection.close()
 
 
 class TestWriterBehavior:

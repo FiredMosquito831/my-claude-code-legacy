@@ -654,9 +654,13 @@ class WebSearchLogStore:
             connection.execute(_PRUNE_ROUTES_SQL, (self._max_rows,))
             connection.execute(_PRUNE_ORPHAN_ROUTES_SQL)
             connection.commit()
-            # Requires incremental auto-vacuum (see ``_ensure_auto_vacuum``);
-            # a no-op whenever the prune freed no pages.
-            connection.execute("PRAGMA incremental_vacuum")
+            # Requires incremental auto-vacuum (see ``_ensure_auto_vacuum``).
+            # The pragma yields one row per reclaimed page; an unconsumed
+            # cursor leaves the statement suspended after the first step
+            # and every prune would reclaim exactly one page while the
+            # rest of the freed pages stay on the freelist.
+            for _ in connection.execute("PRAGMA incremental_vacuum"):
+                pass
             # The pragma's page moves participate in a transaction under
             # Python's implicit-transaction mode; commit them so readers see
             # the reclaimed pages immediately.
