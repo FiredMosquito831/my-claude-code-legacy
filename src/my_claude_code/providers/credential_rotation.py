@@ -113,14 +113,14 @@ class CredentialRotationState:
         self,
         key_count: int,
         policy: str = "single",
-        circuit_open_threshold: int = CIRCUIT_OPEN_THRESHOLD,
+        circuit_threshold: int = CIRCUIT_OPEN_THRESHOLD,
         *,
         clock: Callable[[], float] = time.monotonic,
     ) -> None:
         if policy == "on_error":
             policy = "failover"
         canonical = policy if policy in ROTATION_POLICIES else "single"
-        tuning = replace(PROVIDER_TUNING, circuit_open_threshold=circuit_open_threshold)
+        tuning = replace(PROVIDER_TUNING, circuit_threshold=circuit_threshold)
         self._engine = RotationEngine(
             key_count, policy=canonical, tuning=tuning, clock=clock
         )
