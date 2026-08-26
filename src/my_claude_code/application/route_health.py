@@ -190,7 +190,16 @@ class RouteHealthRegistry:
                     cooldown = provider_lookup(provider_id)
                 except Exception:
                     cooldown = None
-                if cooldown is not None and cooldown > 0:
+                # Guard the comparison: a provider's throttle_remaining() may
+                # legally return None (unknown) or a non-numeric sentinel; treat
+                # anything that isn't a real number as "unknown" rather than
+                # raising a TypeError that aborts the whole chain.
+                if (
+                    cooldown is not None
+                    and isinstance(cooldown, (int, float))
+                    and cooldown > 0
+                ):
+                    continue
                     continue
             usable.append(index)
         if usable:
