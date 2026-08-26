@@ -1106,7 +1106,12 @@ def route_execution_policy(settings: Settings) -> RouteExecutionPolicy:
 # Confirmed against a live server before this change: four consecutive failures
 # of the same model produced zero "MODEL CHAIN: skipping" lines.
 _RouteEjectKey = tuple[
-    Literal["consecutive", "rate_based"], int, int, float, int, float,
+    Literal["consecutive", "rate_based"],
+    int,
+    int,
+    float,
+    int,
+    float,
 ]
 _REGISTRIES: dict[_RouteEjectKey, RouteHealthRegistry] = {}
 

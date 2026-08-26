@@ -1991,6 +1991,7 @@ def _retry_settings() -> Settings:
     settings.fallback_behavior = "rate_based"
     return settings
 
+
 # --------------------------------------------------------------- retry-once --
 
 
@@ -2030,10 +2031,11 @@ def test_error_is_retryable_classifies_failures() -> None:
         (FailureKind.PERMISSION, False),
         (FailureKind.CONTEXT_LENGTH, False),
     ]:
-        failure = ExecutionFailure(kind=kind, status_code=500, message="x", retryable=False)
+        failure = ExecutionFailure(
+            kind=kind, status_code=500, message="x", retryable=False
+        )
         assert executor._error_is_retryable(failure) is retryable, kind
 
     # An unclassified exception is treated as transient: it might be a raw
     # httpx.TimeoutError raised before the failure policy mapped it.
     assert executor._error_is_retryable(TimeoutError("slow")) is True
-

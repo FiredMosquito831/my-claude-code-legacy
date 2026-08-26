@@ -113,6 +113,10 @@ class MessagesHandler:
             provider_lookup=self._throttle_lookup,
         )
         self._trim_policy = _tool_result_trim_policy(settings)
+        self._message_intercepts: tuple[MessageIntercept, ...] = (
+            self._intercept_web_server_tool,
+            self._intercept_local_optimization,
+        )
 
     def _throttle_lookup(self, provider_id: str) -> float | None:
         """Return provider throttle seconds for a provider_id, or None.
@@ -131,10 +135,6 @@ class MessagesHandler:
             return provider.throttle_remaining()
         except Exception:
             return None
-        self._message_intercepts: tuple[MessageIntercept, ...] = (
-            self._intercept_web_server_tool,
-            self._intercept_local_optimization,
-        )
 
     async def create(
         self,
