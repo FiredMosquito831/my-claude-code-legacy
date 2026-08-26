@@ -65,6 +65,7 @@ mock_provider.stream_response = _mock_stream_response
 # so client tests and direct-app tests don't share mutable state.
 app = create_test_app(Settings(), providers={"opencode": mock_provider})
 
+
 @pytest.fixture(scope="module")
 def client():
     """HTTP client with the mock provider injected via the runtime factory.
