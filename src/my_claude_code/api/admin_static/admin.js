@@ -8814,15 +8814,30 @@ function wireValueText(value) {
   return typeof value === "string" ? value : JSON.stringify(value);
 }
 
-/* The knobs, read from params.wire, which is never truncated. The body pane
-   below can degrade its message and tool structure under the size cap; this
-   block cannot, because it is built from the compact summary the writer
-   always stores whole. A key that was not sent has no row: absence is the
-   finding here, so it is shown as absence rather than as a dash. */
+/* Every parameter of the captured body, read from params.wire, which is never
+   truncated. The body pane below can degrade its message and tool structure
+   under the size cap; this block cannot, because it is built from the compact
+   summary the writer always stores whole -- and it is rendered above that pane
+   because debugging reads knobs first and structure second.
+
+   Nothing the writer stored is dropped here. The block used to render a
+   hard-coded shortlist, which meant a parameter MCC had learned to send but
+   this list had never heard of -- min_p, tool_choice, response_format -- was
+   captured, stored, and then invisible. The named rows below only fix the
+   ORDER the familiar knobs are read in; every remaining key follows them,
+   sorted, so a dialect nobody anticipated still shows up whole.
+
+   A key that was not sent has no row: absence is the finding here, so it is
+   shown as absence rather than as a dash. */
 function buildWireKnobs(attempt) {
   const wire = (attempt.params && attempt.params.wire) || null;
   if (!wire) return null;
   const rows = [];
+  /* "reasoning" is a nested container whose keys are rendered individually
+     below, so it is claimed here and never printed as a JSON blob of its own. */
+  const claimed = new Set(
+    ["model", "max_tokens", "tools", "reasoning"].concat(WIRE_SAMPLING_FIELDS),
+  );
   ["model", "max_tokens", "tools"].forEach((name) => {
     if (wire[name] != null) rows.push([name, wireValueText(wire[name])]);
   });
@@ -8835,6 +8850,12 @@ function buildWireKnobs(attempt) {
   WIRE_SAMPLING_FIELDS.forEach((name) => {
     if (wire[name] != null) rows.push([name, wireValueText(wire[name])]);
   });
+  Object.keys(wire)
+    .filter((name) => !claimed.has(name) && wire[name] != null)
+    .sort()
+    .forEach((name) => {
+      rows.push([name, wireValueText(wire[name])]);
+    });
   if (!rows.length) return null;
   const list = document.createElement("dl");
   list.className = "req-wire-knobs";

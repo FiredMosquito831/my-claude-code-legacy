@@ -605,6 +605,36 @@ def test_the_wire_pane_names_the_allowance_a_thinking_turn_was_widened_to(
     assert "64000" in detail["knobs"]
 
 
+def test_the_wire_pane_renders_a_parameter_it_was_never_taught_by_name(
+    rendered,
+) -> None:
+    """A hard-coded knob list hid every parameter a newer dialect sends.
+
+    The values were captured and stored the whole time; only the rendering
+    dropped them, so the pane quietly answered "what left this process" with a
+    subset. Every key params.wire carries now gets a row.
+    """
+    detail = rendered["requestDetail"]["unusualKnobs"]
+    for name in (
+        "top_k",
+        "min_p",
+        "repetition_penalty",
+        "parallel_tool_calls",
+        "response_format",
+        "tool_choice",
+        "extra_body.chat_template_kwargs",
+    ):
+        assert name in detail["knobKeys"]
+    assert "40" in detail["knobs"]
+    assert "0.05" in detail["knobs"]
+    assert "1.05" in detail["knobs"]
+    assert "false" in detail["knobs"]
+    # The nested reasoning container is read out key by key, never printed as
+    # a JSON blob under the name "reasoning".
+    assert "reasoning" not in detail["knobKeys"]
+    assert "reasoning_effort" in detail["knobKeys"]
+
+
 def test_an_unwidened_attempt_shows_no_widening_row(rendered) -> None:
     """Absence is the finding here, exactly as it is for every other wire knob."""
     detail = rendered["requestDetail"]["degraded"]

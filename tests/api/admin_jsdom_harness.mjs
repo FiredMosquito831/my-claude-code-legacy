@@ -1044,6 +1044,34 @@ const requestDetail = {
       }),
     ],
   }),
+  /* A body from a dialect whose knobs the pane was never taught by name. Every
+     one of these was already being captured and stored; none of them reached
+     the screen while the block rendered a hard-coded list. */
+  unusualKnobs: driveDetail({
+    reasoning_adaptation: null,
+    reasoning_adaptation_kind: null,
+    route_attempts: [
+      detailAttempt({
+        reasoning_emitted: 1,
+        params: {
+          wire: {
+            model: "deepseek-ai/DeepSeek-V4",
+            max_tokens: 32768,
+            tools: 12,
+            temperature: 0.6,
+            top_k: 40,
+            repetition_penalty: 1.05,
+            reasoning: { reasoning_effort: "high" },
+            min_p: 0.05,
+            parallel_tool_calls: false,
+            response_format: { type: "json_object" },
+            tool_choice: "auto",
+            "extra_body.chat_template_kwargs": { thinking: true },
+          },
+        },
+      }),
+    ],
+  }),
   /* The same outcome as written by a pre-6.6.0 server, which had one value for
      both meanings. Stored rows are never migrated, so this shape is still on
      disk on every upgraded install. */
