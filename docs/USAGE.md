@@ -620,7 +620,7 @@ A provider with three hundred models is not manageable one tick at a time. On a 
 | --- | --- |
 | Click, then **Shift+click** | everything between the two rows |
 | **Shift+ArrowDown / Shift+ArrowUp** | extends or shrinks the same range from the keyboard |
-| **Shift+Space** | the row under the cursor |
+| **Shift+Space** | extends the selection from the anchor row to the focused row — the keyboard equivalent of Shift+click; a single row only when no anchor exists |
 | Press and **drag down the gutter** | every row the pointer crosses |
 
 A drag never leaves a mixed run — swept rows all take the anchor row's state. The provider header checkbox is tri-state, and the action bar counts what you have picked as you pick it. The keyboard gestures are not decoration: a pointer drag alone would fail WCAG 2.2's dragging-movements rule.
