@@ -594,6 +594,24 @@ def test_the_wire_pane_shows_a_knobs_block_from_params_wire(rendered) -> None:
     assert "0.7" in detail["knobs"]
 
 
+def test_the_wire_pane_names_the_allowance_a_thinking_turn_was_widened_to(
+    rendered,
+) -> None:
+    """A max_tokens nobody asked for looks invented until the line explains it."""
+    detail = rendered["requestDetail"]["widened"]
+    assert "max_tokens 131,072" in detail["text"]
+    assert "raised from 64,000 for reasoning" in detail["text"]
+    assert "output_widened_from" in detail["knobKeys"]
+    assert "64000" in detail["knobs"]
+
+
+def test_an_unwidened_attempt_shows_no_widening_row(rendered) -> None:
+    """Absence is the finding here, exactly as it is for every other wire knob."""
+    detail = rendered["requestDetail"]["degraded"]
+    assert "output_widened_from" not in detail["knobKeys"]
+    assert "raised from" not in detail["text"]
+
+
 def test_a_degraded_body_renders_as_parseable_json(rendered) -> None:
     json.loads(rendered["requestDetail"]["degraded"]["pre"])
 

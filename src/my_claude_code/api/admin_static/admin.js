@@ -8789,8 +8789,13 @@ const WIRE_SAMPLING_FIELDS = [
 /** One line of the numbers people open this panel to check. */
 function formatWireFacts(attempt) {
   const wire = (attempt.params && attempt.params.wire) || {};
+  const widened = attempt.params && attempt.params.output_widened_from;
   const parts = [];
   if (wire.max_tokens != null) parts.push(`max_tokens ${Number(wire.max_tokens).toLocaleString()}`);
+  /* The "from" for the max_tokens above. Only present when the allowance was
+     actually raised because the attempt was going to think, so the line reads
+     as an explanation of a number that would otherwise look invented. */
+  if (widened != null) parts.push(`raised from ${Number(widened).toLocaleString()} for reasoning`);
   if (wire.tools != null) parts.push(wire.tools === 1 ? "1 tool" : `${wire.tools} tools`);
   if (wire.temperature != null) parts.push(`temp ${wire.temperature}`);
   const reasoning = wire.reasoning || null;
@@ -8821,6 +8826,8 @@ function buildWireKnobs(attempt) {
   ["model", "max_tokens", "tools"].forEach((name) => {
     if (wire[name] != null) rows.push([name, wireValueText(wire[name])]);
   });
+  const widened = attempt.params && attempt.params.output_widened_from;
+  if (widened != null) rows.push(["output_widened_from", wireValueText(widened)]);
   const reasoning = wire.reasoning || {};
   Object.keys(reasoning).forEach((name) => {
     rows.push([name, wireValueText(reasoning[name])]);
