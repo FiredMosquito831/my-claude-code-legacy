@@ -1519,6 +1519,12 @@ function routeNodeControls(node, id, label) {
   grip.addEventListener("click", (event) => onRouteSelectClick(id, event));
   grip.addEventListener("keydown", (event) => onRouteSelectKeydown(id, event));
 
+  // Chip and button share one cell. A hidden chip is `display: none` and
+  // would otherwise vacate a grid column, shifting every control on a paused
+  // row one place left of the same control on the row above it.
+  const cell = document.createElement("div");
+  cell.className = "route-pause-cell";
+
   const chip = document.createElement("span");
   chip.className = "route-pause-chip";
   chip.textContent = "Paused";
@@ -1536,7 +1542,8 @@ function routeNodeControls(node, id, label) {
     toggleRoutePause(modelKey, ref, !isRoutePaused(modelKey, ref), pause);
   });
 
-  return { grip, chip, pause };
+  cell.append(chip, pause);
+  return { grip, cell };
 }
 
 function routeNode(marker, control, modifier) {
@@ -1573,7 +1580,7 @@ function appendRouteRail(rail, modelField, chainField) {
     modelField.label,
   );
   node.insertBefore(primaryControls.grip, node.firstChild);
-  node.append(primaryControls.chip, primaryControls.pause);
+  node.appendChild(primaryControls.cell);
   rail.appendChild(node);
   if (!chainField) return;
 
@@ -3912,8 +3919,7 @@ class ModelChainEditor {
       controls.grip,
       numberEl,
       combobox.element,
-      controls.chip,
-      controls.pause,
+      controls.cell,
       upButton,
       downButton,
       removeButton,

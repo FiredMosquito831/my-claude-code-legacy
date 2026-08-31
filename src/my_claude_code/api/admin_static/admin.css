@@ -1134,10 +1134,10 @@ textarea:focus-visible,
   display: grid;
   flex: 0 0 auto;
   place-items: center;
-  /* 32px, over the WCAG 2.2 24px target minimum, and the same size the
-     Models page's selection cell uses. */
-  width: 32px;
-  height: 32px;
+  /* Over the WCAG 2.2 24px target minimum in both directions. A rail can
+     spare about 335px for the whole row, so it takes no more than it needs. */
+  width: 28px;
+  height: 28px;
   padding: 0;
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
@@ -1200,7 +1200,7 @@ textarea:focus-visible,
 
 .route-pause-chip {
   flex: 0 0 auto;
-  padding: 2px 8px;
+  padding: 2px 6px;
   border: 1px solid var(--warn-border);
   border-radius: var(--radius-full);
   background: var(--warn-bg);
@@ -1209,10 +1209,19 @@ textarea:focus-visible,
   font-weight: 600;
 }
 
+.route-pause-cell {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 4px;
+}
+
 .route-pause-toggle {
   flex: 0 0 auto;
-  min-width: 62px;
+  padding: 4px 8px;
   font-size: 11px;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .model-chain-row.is-paused .route-pause-toggle,
@@ -1320,7 +1329,9 @@ textarea:focus-visible,
 .route-rail .model-chain-add::after {
   content: "";
   position: absolute;
-  left: 12px;
+  /* Centre of the marker column: 28px of grip, a 4px gap, then half of the
+     24px marker. The grip moved the whole rail right by exactly one column. */
+  left: 43px;
   width: 2px;
   border-radius: 1px;
   background: var(--line-strong);
@@ -1344,9 +1355,13 @@ textarea:focus-visible,
 .route-node {
   position: relative;
   display: grid;
-  grid-template-columns: 24px minmax(0, 1fr);
+  /* Grip, marker, control, pause cell. The columns are explicit rather than
+     auto-flowing so the primary's controls line up with the identical
+     controls on every fallback row below it. */
+  grid-template-columns: 28px 24px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 12px;
+  column-gap: 4px;
+  row-gap: 8px;
   min-height: 40px;
 }
 
@@ -1354,8 +1369,7 @@ textarea:focus-visible,
    so it carries the same move buttons every fallback under it carries. The
    third column is that button cluster. */
 .route-node.has-move {
-  grid-template-columns: 24px minmax(0, 1fr) auto;
-  column-gap: 6px;
+  grid-template-columns: 28px 24px minmax(0, 1fr) auto auto;
 }
 
 .route-node-move {
@@ -1423,7 +1437,10 @@ textarea:focus-visible,
 .route-rail .model-chain-row {
   position: relative;
   display: grid;
-  grid-template-columns: 24px minmax(0, 1fr) auto auto auto;
+  /* Grip, number, control, pause cell, then the three buttons. Explicit, and
+     the first two columns match .route-node exactly, so a fallback's controls
+     sit under the primary's rather than beside them. */
+  grid-template-columns: 28px 24px minmax(0, 1fr) auto auto auto auto;
   align-items: center;
   gap: 4px;
   min-height: 40px;
