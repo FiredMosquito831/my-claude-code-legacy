@@ -1124,6 +1124,137 @@ textarea:focus-visible,
   border-color: var(--line-strong);
 }
 
+/* ------------------------------------------------------------- route drag
+   The rail is dragged by a grip rather than by the row, so a finger scrolling
+   over a card still scrolls the card. `touch-action: none` is scoped to the
+   grip alone for exactly that reason -- it is the first rule of its kind in
+   this file and widening it would make the page unscrollable on a phone. */
+
+.route-drag-grip {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  /* 32px, over the WCAG 2.2 24px target minimum, and the same size the
+     Models page's selection cell uses. */
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1;
+  cursor: grab;
+  touch-action: none;
+}
+
+.route-drag-grip:hover {
+  border-color: var(--line-strong);
+  color: var(--text);
+}
+
+.route-drag-grip:active {
+  cursor: grabbing;
+}
+
+.route-grid.is-dragging,
+.route-vision.is-dragging {
+  user-select: none;
+}
+
+/* Selection is an inset bar plus a tint, never colour alone: a hue is not a
+   state to a reader who cannot see it. */
+.model-chain-row.is-selected,
+.route-node.is-selected {
+  box-shadow: inset 2px 0 0 var(--accent);
+  background: var(--accent-muted);
+  border-radius: var(--radius-sm);
+}
+
+.model-chain-row.is-dragging,
+.route-node.is-dragging {
+  opacity: 0.6;
+}
+
+.route-card.is-drop-target {
+  border-color: var(--accent-border);
+}
+
+.route-drop-indicator {
+  height: 2px;
+  margin: 2px 0;
+  border-radius: var(--radius-full);
+  background: var(--accent);
+}
+
+/* A paused entry stays fully visible with its complete ref. Hiding it would
+   be the one thing this product is documented never to do to a configured
+   route -- the reader has to be able to see, and undo, what they switched
+   off. Dimmed and struck, not removed. */
+.model-chain-row.is-paused .model-combobox input,
+.route-node.is-paused .model-combobox input {
+  opacity: 0.65;
+  text-decoration: line-through;
+}
+
+.route-pause-chip {
+  flex: 0 0 auto;
+  padding: 2px 8px;
+  border: 1px solid var(--warn-border);
+  border-radius: var(--radius-full);
+  background: var(--warn-bg);
+  color: var(--warn);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.route-pause-toggle {
+  flex: 0 0 auto;
+  min-width: 62px;
+  font-size: 11px;
+}
+
+.model-chain-row.is-paused .route-pause-toggle,
+.route-node.is-paused .route-pause-toggle {
+  border-color: var(--warn-border);
+  color: var(--warn);
+}
+
+/* Mirrors .models-bulk-result: one persistent panel of whole sentences with
+   its own Undo and Dismiss, not a toast that takes the answer away with it. */
+.route-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--accent-border);
+  border-radius: var(--radius-lg);
+  background: var(--accent-muted);
+  color: var(--text);
+  font-size: 13px;
+}
+
+.route-status p {
+  flex: 1 1 100%;
+  margin: 0;
+}
+
+.route-status-button {
+  padding: 4px 12px;
+  font-size: 12px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .route-drag-grip,
+  .model-chain-row,
+  .route-node {
+    transition: none;
+  }
+}
+
 .route-card-head {
   display: flex;
   align-items: center;
