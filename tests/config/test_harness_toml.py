@@ -13,7 +13,7 @@ from pathlib import Path
 import pytest
 
 from my_claude_code.config.harness_toml import (
-    messages_base_url,
+    kimi_base_url,
     toml_document_bytes,
     with_kimi_credentials,
     write_toml_document_atomically_if_changed,
@@ -110,7 +110,7 @@ def test_the_credentials_are_resolved_only_where_the_placeholders_stand() -> Non
         DOCUMENT, proxy_root_url="http://127.0.0.1:8199", api_key="secret-token"
     )
 
-    assert _provider(resolved)["base_url"] == "http://127.0.0.1:8199/v1"
+    assert _provider(resolved)["base_url"] == "http://127.0.0.1:8199"
     assert _provider(resolved)["api_key"] == "secret-token"
     # The source document is left alone: the serialiser's output is shared
     # with the dashboard route and the launcher's stderr summary.
@@ -128,9 +128,16 @@ def test_resolving_twice_changes_nothing_the_second_time() -> None:
     assert twice == once
 
 
-def test_the_base_url_always_ends_in_v1() -> None:
-    """The Anthropic SDK appends ``/messages``; MCC serves ``/v1/messages``."""
+def test_the_base_url_is_the_proxy_root_and_never_carries_v1() -> None:
+    """Kimi's client is the *official* Anthropic SDK, which owns the ``/v1``.
 
-    assert messages_base_url("http://127.0.0.1:8082") == "http://127.0.0.1:8082/v1"
-    assert messages_base_url("http://127.0.0.1:8082/") == "http://127.0.0.1:8082/v1"
-    assert messages_base_url("http://127.0.0.1:8082/v1") == "http://127.0.0.1:8082/v1"
+    A base URL ending in ``/v1`` produced ``POST /v1/v1/messages`` and a 404
+    against a real launch. Every other harness wants the opposite, because
+    they go through Vercel's ``@ai-sdk/anthropic``, which appends a bare
+    ``/messages``.
+    """
+
+    assert kimi_base_url("http://127.0.0.1:8082") == "http://127.0.0.1:8082"
+    assert kimi_base_url("http://127.0.0.1:8082/") == "http://127.0.0.1:8082"
+    assert kimi_base_url("http://127.0.0.1:8082/v1") == "http://127.0.0.1:8082"
+    assert kimi_base_url("http://127.0.0.1:8082/v1/") == "http://127.0.0.1:8082"

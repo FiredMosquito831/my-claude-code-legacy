@@ -73,8 +73,10 @@ PROVIDER_ID = "mcc"
 #: ``vertexai``. Only ``anthropic`` reaches MCC's inbound surface: it
 #: constructs ``kosong.contrib.chat_provider.anthropic.Anthropic``, which is
 #: the official ``anthropic`` SDK and posts ``{base_url}/messages`` with an
-#: ``x-api-key`` header. ``openai_legacy`` would post ``/chat/completions``,
-#: which MCC does not serve.
+#: ``x-api-key`` header -- so ``base_url`` is MCC's *root*, not its ``/v1``,
+#: because that SDK's route is already ``/v1/messages``.
+#: ``openai_legacy`` would post ``/chat/completions``, which MCC does not
+#: serve.
 PROVIDER_TYPE = "anthropic"
 
 #: Written verbatim and replaced by the caller. See

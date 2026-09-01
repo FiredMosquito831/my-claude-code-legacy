@@ -323,7 +323,8 @@ def test_a_toml_catalogue_is_written_as_toml_with_its_credentials_resolved(
 
     document = tomllib.loads(path.read_text(encoding="utf-8"))
     assert document["providers"]["mcc"]["type"] == "anthropic"
-    assert document["providers"]["mcc"]["base_url"].endswith("/v1")
+    assert not document["providers"]["mcc"]["base_url"].endswith("/v1")
+    assert document["providers"]["mcc"]["base_url"].startswith("http")
     assert "base-url.mcc.invalid" not in path.read_text(encoding="utf-8")
     assert document["providers"]["mcc"]["api_key"] == PROXY_NO_AUTH_SENTINEL
     models = document["models"]

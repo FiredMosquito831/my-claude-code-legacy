@@ -123,7 +123,7 @@ def with_kimi_credentials(
             rewritten[str(name)] = value
             continue
         if entry.get("base_url") == KIMI_BASE_URL_SENTINEL:
-            entry["base_url"] = messages_base_url(proxy_root_url)
+            entry["base_url"] = kimi_base_url(proxy_root_url)
         if entry.get("api_key") == KIMI_API_KEY_SENTINEL:
             entry["api_key"] = api_key
         rewritten[str(name)] = entry
@@ -131,18 +131,26 @@ def with_kimi_credentials(
     return resolved
 
 
-def messages_base_url(proxy_root_url: str) -> str:
-    """Return the base URL the Anthropic SDK appends ``/messages`` to.
+def kimi_base_url(proxy_root_url: str) -> str:
+    """Return the base URL Kimi Code's Anthropic client wants: the proxy *root*.
 
+    This is the opposite of what the OpenCode family and Command Code need, and
+    the difference is the SDK underneath rather than anything about MCC.
     ``kosong.contrib.chat_provider.anthropic.Anthropic`` hands ``base_url``
-    straight to ``anthropic.AsyncAnthropic``, which posts ``{base_url}/messages``.
-    So the ``/v1`` has to be on the base URL for the request to land on MCC's
-    ``POST /v1/messages`` and not on ``POST /messages``, which MCC does not
-    serve.
+    straight to ``anthropic.AsyncAnthropic``, the *official* Anthropic SDK,
+    whose message route is already ``/v1/messages`` -- so a base URL ending in
+    ``/v1`` produces ``POST /v1/v1/messages`` and a 404 with no hint as to
+    which half is wrong. The other harnesses go through Vercel's
+    ``@ai-sdk/anthropic``, which appends a bare ``/messages`` and therefore
+    does want the ``/v1``.
+
+    Measured, not reasoned: a launch against a scratch proxy logged exactly
+    that ``POST /v1/v1/messages 404``, which is why any trailing ``/v1`` is
+    stripped here rather than appended.
     """
 
     stripped = proxy_root_url.rstrip("/")
-    return stripped if stripped.endswith("/v1") else f"{stripped}/v1"
+    return stripped.removesuffix("/v1").rstrip("/")
 
 
 def _deep_copy_mapping(value: Mapping[str, object]) -> dict[str, object]:

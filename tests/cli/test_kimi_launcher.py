@@ -92,7 +92,9 @@ def test_the_written_config_is_the_document_kimi_can_load(tmp_path: Path) -> Non
     written = tomllib.loads(path.read_text(encoding="utf-8"))
     provider = written["providers"]["mcc"]
     assert provider["type"] == "anthropic"
-    assert provider["base_url"] == "http://127.0.0.1:8199/v1"
+    # The proxy root, not ``/v1``: Kimi's client is the official Anthropic
+    # SDK, whose route is already ``/v1/messages``.
+    assert provider["base_url"] == "http://127.0.0.1:8199"
     assert provider["api_key"] == "secret-token"
     entry = written["models"]["mcc/openrouter/sonnet"]
     assert entry["provider"] == "mcc"
