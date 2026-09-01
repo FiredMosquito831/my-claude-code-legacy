@@ -132,7 +132,9 @@ def test_disconnect_removes_the_key_and_says_so(
     path = tmp_path / ".commandcode" / "providers.json"
     path.parent.mkdir(parents=True)
     path.write_text(
-        json.dumps({"provider": {"mcc": {"models": {}}, "ollama": {}}, "theme": "dark"}),
+        json.dumps(
+            {"provider": {"mcc": {"models": {}}, "ollama": {}}, "theme": "dark"}
+        ),
         encoding="utf-8",
     )
 

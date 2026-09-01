@@ -241,9 +241,9 @@ def test_a_merge_card_names_the_users_own_file_and_the_one_key_mcc_writes(
     with _local_client(app) as client:
         body = client.get("/admin/api/harnesses").json()
 
-    entry = next(
-        item for item in body["harnesses"] if item["id"] == "commandcode_cli"
-    )["catalogue"]
+    entry = next(item for item in body["harnesses"] if item["id"] == "commandcode_cli")[
+        "catalogue"
+    ]
     assert entry["delivery"] == "merge"
     assert entry["config_env_var"] is None
     assert entry["merged_key"] == "provider.mcc"
@@ -253,9 +253,7 @@ def test_a_merge_card_names_the_users_own_file_and_the_one_key_mcc_writes(
     assert entry["defaulted_model_count"] == 1
 
 
-def test_a_users_config_without_mccs_key_reads_as_never_launched(
-    monkeypatch, tmp_path
-):
+def test_a_users_config_without_mccs_key_reads_as_never_launched(monkeypatch, tmp_path):
     _set_home(monkeypatch, tmp_path)
     monkeypatch.setattr(
         "my_claude_code.api.admin_harness_routes.shutil.which", lambda name: None
@@ -271,8 +269,8 @@ def test_a_users_config_without_mccs_key_reads_as_never_launched(
     with _local_client(app) as client:
         body = client.get("/admin/api/harnesses").json()
 
-    entry = next(
-        item for item in body["harnesses"] if item["id"] == "commandcode_cli"
-    )["catalogue"]
+    entry = next(item for item in body["harnesses"] if item["id"] == "commandcode_cli")[
+        "catalogue"
+    ]
     assert entry["exists"] is False
     assert entry["model_count"] is None

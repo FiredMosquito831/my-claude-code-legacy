@@ -61,9 +61,7 @@ def test_proxy_auth_accepts_the_two_headers_an_anthropic_client_actually_sends()
             {"Authorization": "Bearer s3cr3t"},
             {"X-API-Key": "s3cr3t"},
         ):
-            r = client.post(
-                "/v1/messages/count_tokens", json=payload, headers=headers
-            )
+            r = client.post("/v1/messages/count_tokens", json=payload, headers=headers)
             assert r.status_code == 200
             assert r.json()["input_tokens"] == 1
 
