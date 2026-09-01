@@ -553,12 +553,12 @@ using the same visibility filter, ref enumeration and two-variant projection as
 this route — so a model can never appear in one and not the other — and writes
 each harness's catalogue without making a loopback HTTP request.
 `ProviderRuntimeManager` invokes the bridge after authoritative settings,
-discovery, provider-test, or connected-account changes. Startup writes a missing
-file once the background discovery pass completes, and preserves an existing
-last-known-good catalog until then. `ensure_exists` additionally supports a
-warm-start path that creates a minimal catalog before the full discovery pass
-for callers that warm routed providers first. Writes are atomic and identical
-bytes are not rewritten. Projection or filesystem failures emit only a concise
+discovery, provider-test, or connected-account changes. `ensure_exists` runs at
+startup and may create only a catalogue whose spec sets `created_at_startup`
+(today just Codex's, for the launcher-less Codex App); every other missing file
+is left for that harness's own first launch. An existing last-known-good
+catalogue is preserved whenever the projection resolves no routable models.
+Writes are atomic and identical bytes are not rewritten. Projection or filesystem failures emit only a concise
 warning and do not fail server startup, Admin operations, discovery, or
 inference. Shutdown never publishes the cleared in-memory cache.
 
