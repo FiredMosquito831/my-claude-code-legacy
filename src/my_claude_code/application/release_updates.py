@@ -295,6 +295,23 @@ def _uv_tool_dir(uv_executable: str | None = None) -> Path | None:
     return Path(path) if completed.returncode == 0 and path else None
 
 
+def _installed_tool_dir() -> Path | None:
+    """The tool environment this process runs from, found without calling uv.
+
+    ``sys.executable`` inside a uv tool environment is ``<tool dir>/Scripts/
+    python.exe`` (``bin/python`` on POSIX), and uv keeps ``uv-receipt.toml``
+    in that same ``<tool dir>``. Deriving it this way matters: the deferred
+    upgrade path must not run uv at all while the server is still alive, which
+    is the whole reason it defers. Returns None when this is not a uv tool
+    environment (a development checkout, say), and the helper then falls back
+    to the family pattern and the entry points alone.
+    """
+    candidate = Path(sys.executable).resolve().parent.parent
+    if (candidate / "uv-receipt.toml").is_file():
+        return candidate
+    return None
+
+
 def _uv_tool_bin_dir(uv_executable: str | None = None) -> Path | None:
     """Return the stable executable directory outside a uv tool environment."""
     uv = uv_executable or shutil.which("uv")
@@ -708,7 +725,7 @@ if (($code -ne 0) -and $binDir) {{
                     $rewritten = $rewritten.Replace($stagePrefix, $realPrefix)
                 }}
                 if ($rewritten -ne $receiptText) {{
-                    [IO.File]::WriteAllText(($receiptPath + '.new'), $rewritten, (New-Object System.Text.UTF8Encoding($false)))
+                    [System.IO.File]::WriteAllText(($receiptPath + '.new'), $rewritten, (New-Object System.Text.UTF8Encoding($false)))
                     Move-Item -LiteralPath ($receiptPath + '.new') -Destination $receiptPath -Force
                 }}
             }}
@@ -807,7 +824,9 @@ def _spawn_deferred_upgrade(
                 bin_dir=server_launcher.parent,
                 # The staged fallback rewrites the receipt's entrypoint paths
                 # back to the real bin directory, so it needs the owner's dir.
-                tool_dir=_receipt_path(uv_executable).parent,
+                # Derived from sys.executable, not from `uv tool dir`: no uv
+                # may run while the server is alive.
+                tool_dir=_installed_tool_dir(),
                 commands=_published_commands(),
             ),
             encoding="utf-8",
