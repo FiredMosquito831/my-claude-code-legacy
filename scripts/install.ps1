@@ -1066,7 +1066,8 @@ function Start-DeferredInstall {
     # the launcher is gone. A start time we cannot read is recorded as 0 and
     # falls back to the id alone, which is the previous behaviour rather than a
     # new failure mode -- never treat "unknown" as "gone", or we would install
-    # underneath a live process. This mirrors release_updates.py's helper.
+    # underneath a process that has not exited yet. Mirrors the helper in
+    # release_updates.py.
     $pidsLiteral = ($Running | ForEach-Object {
         $startTime = 0
         try { $startTime = $_.StartTime.ToFileTimeUtc() } catch { $startTime = 0 }
@@ -1097,7 +1098,7 @@ function Test-TargetAlive {
     `$proc = Get-Process -Id `$Target.Id -ErrorAction SilentlyContinue
     if (-not `$proc) { return `$false }
     # 0 means we could not read the launcher's start time; fall back to the id
-    # alone rather than risk installing while it is still running.
+    # alone rather than risk installing underneath a live launcher.
     if (`$Target.Start -eq 0) { return `$true }
     try { return `$proc.StartTime.ToFileTimeUtc() -eq `$Target.Start }
     catch { return `$false }

@@ -174,9 +174,11 @@ if [ "${{1:-}}" = "tool" ] && [ "${{2:-}}" = "install" ]; then
     for name in mcc-server mcc-claude mcc-claude-old mcc-codex mcc-pi \
         mcc-opencode mcc-opencode2 mcc-kilo mcc-commandcode mcc-kimi \
         mcc-qwen mcc-crush \
-        mcc-init mcc-chatgpt-oauth-login mcc-compact-log mcc-help mcc-rtk \
+        mcc-init mcc-chatgpt-oauth-login mcc-anthropic-oauth-login \
+        mcc-compact-log mcc-help mcc-rtk \
         mcc-desktop my-claude-code fcc-server fcc-claude fcc-claude-old fcc-pi \
-        fcc-init fcc-chatgpt-oauth-login fcc-compact-log free-claude-code \
+        fcc-init fcc-chatgpt-oauth-login fcc-anthropic-oauth-login \
+        fcc-compact-log fcc-help fcc-rtk fcc-desktop free-claude-code \
         fcc-codex; do
         cp "$FAKE_FIXTURES/fcc-command.sh" "$FAKE_TOOL_BIN/$name"
     done
