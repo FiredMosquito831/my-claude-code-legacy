@@ -16,9 +16,9 @@ from my_claude_code.application.catalogues import model_entries, serialise
 from my_claude_code.application.catalogues.base import DEFAULTED_KEY
 from my_claude_code.application.catalogues.cline import (
     CLI_DOCUMENTED_DEFAULTS,
-    UPDATED_AT,
     MODELS_KEY,
     PROVIDER_ID,
+    UPDATED_AT,
     build_cline_catalogue,
 )
 from my_claude_code.config.harness_cline import (
