@@ -92,7 +92,7 @@ def test_env_check_reports_build_failure(tmp_path: Path) -> None:
     it, so this forces the failure to prove the check reports it rather than
     swallowing it.
     """
-    import my_claude_code.config.settings as settings_module
+    from unittest.mock import patch
 
     legacy = tmp_path / ".fcc"
     legacy.mkdir()
@@ -104,13 +104,10 @@ def test_env_check_reports_build_failure(tmp_path: Path) -> None:
     def fake_settings(*args, **kwargs):
         raise _Boom("synthetic env build failure")
 
-    original = settings_module.Settings
-    settings_module.Settings = fake_settings
-    try:
+    with patch("my_claude_code.config.settings.Settings", side_effect=fake_settings):
         health = paths.check_legacy_home(legacy)
-    finally:
-        settings_module.Settings = original
 
+    assert health is not None
     assert health.failed_check == "env"
     assert "synthetic env build failure" in health.detail
 
@@ -128,6 +125,7 @@ def test_legacy_dir_with_short_request_log_is_rejected(tmp_path: Path) -> None:
     resolution = paths.resolve_config_dir(home=tmp_path)
 
     assert resolution.legacy_rejected
+    assert resolution.legacy_health is not None
     assert resolution.legacy_health.failed_check == "request_log"
 
 
@@ -139,6 +137,7 @@ def test_legacy_dir_with_bare_array_providers_is_rejected(tmp_path: Path) -> Non
     resolution = paths.resolve_config_dir(home=tmp_path)
 
     assert resolution.legacy_rejected
+    assert resolution.legacy_health is not None
     assert resolution.legacy_health.failed_check == "custom_providers"
 
 

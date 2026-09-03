@@ -1864,7 +1864,7 @@ def test_staged_install_keeps_a_locked_shim_and_repoints_the_receipt(
     tool_dir = tmp_path / "tools" / "my-claude-code"
     for path in (bin_dir, stage_source, tool_dir):
         path.mkdir(parents=True)
-    for name in ("mcc-server.exe", "mcc-rtk.exe"):
+    for name in ("mcc-server.exe", "mcc-rtk.exe", "mcc-migrate.exe"):
         (bin_dir / name).write_bytes(b"old shim")
         (stage_source / name).write_bytes(b"new shim")
 
@@ -1880,6 +1880,8 @@ def test_staged_install_keeps_a_locked_shim_and_repoints_the_receipt(
         "\r\n"
         f'>> "{tool_dir}\\uv-receipt.toml" echo     {{ name = "mcc-server", '
         'install-path = "%UV_TOOL_BIN_DIR:\\=/%/mcc-server.exe" },\r\n'
+        f'>> "{tool_dir}\\uv-receipt.toml" echo     {{ name = "mcc-migrate", '
+        'install-path = "%UV_TOOL_BIN_DIR:\\=/%/mcc-migrate.exe" },\r\n'
         f'>> "{tool_dir}\\uv-receipt.toml" echo ]\r\n',
         encoding="utf-8",
     )

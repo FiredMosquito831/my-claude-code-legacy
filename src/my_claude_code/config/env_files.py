@@ -1,7 +1,7 @@
 """Dotenv file discovery and explicit dotenv override helpers."""
 
 import os
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
@@ -69,7 +69,7 @@ def settings_env_files(env: Mapping[str, str] | None = None) -> tuple[Path, ...]
     return tuple(files)
 
 
-class LazyEnvFiles:
+class LazyEnvFiles(Sequence[Path]):
     """A sequence of dotenv paths resolved on first use, not at import time.
 
     ``SettingsConfigDict.env_file`` is evaluated while the ``Settings`` class
@@ -81,6 +81,10 @@ class LazyEnvFiles:
     point ``config.settings`` is fully initialised and the config directory can
     be resolved. ``configured_env_files`` iterates it, so the deferral reaches
     every consumer.
+
+    Inherits ``collections.abc.Sequence[Path]`` so the type checker accepts it
+    for pydantic-settings' ``env_file: DotenvType`` (which is
+    ``Path | Sequence[Path | str] | None``).
     """
 
     def __init__(self, env: Mapping[str, str] | None = None) -> None:
@@ -107,6 +111,8 @@ class LazyEnvFiles:
 
     def __repr__(self) -> str:
         return f"LazyEnvFiles({self._resolve()!r})"
+
+
 
 
 def configured_env_files(model_config: Mapping[str, Any]) -> tuple[Path, ...]:
