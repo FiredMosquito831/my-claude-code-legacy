@@ -113,8 +113,6 @@ class LazyEnvFiles(Sequence[Path]):
         return f"LazyEnvFiles({self._resolve()!r})"
 
 
-
-
 def configured_env_files(model_config: Mapping[str, Any]) -> tuple[Path, ...]:
     """Return the env files currently configured for a Settings model."""
 
