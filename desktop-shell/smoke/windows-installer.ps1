@@ -77,6 +77,12 @@ function Get-Snapshot {
 }
 
 function Compare-Snapshot([string] $Name, $Before, $After) {
+    # Compare-Object refuses two empty collections, and "both sides are empty"
+    # is a legitimate state on a fresh CI runner with no HKCU Run values.
+    if (@($Before).Count -eq 0 -and @($After).Count -eq 0) {
+        Ok "$Name was empty before and after"
+        return
+    }
     $diff = Compare-Object -ReferenceObject @($Before) -DifferenceObject @($After)
     if ($diff) {
         $diff | Format-Table -AutoSize | Out-String | Write-Host
