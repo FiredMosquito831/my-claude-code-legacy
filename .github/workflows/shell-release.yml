@@ -175,6 +175,11 @@ jobs:
 
       - name: Package (tar)
         if: runner.os != 'Windows'
+        env:
+          # macOS `tar` otherwise writes an AppleDouble `._MyClaudeCode`
+          # sidecar for any file carrying extended attributes, which would put
+          # a second, junk member in an archive S4 extracts expecting one.
+          COPYFILE_DISABLE: "1"
         run: |
           set -euo pipefail
           mkdir -p dist
